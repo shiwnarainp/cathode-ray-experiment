@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cathode Ray Tube Experiment</title>
+<meta name="description" content="Interactive simulation of J. J. Thomson's cathode ray tube experiment for NYS Regents Chemistry: predict, deflect the beam, and discover evidence for the electron." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0E16;
+  --surface:#121826;
+  --surface-sunken:#080B12;
+  --ink:#E7ECF5;
+  --ink-muted:#8C98AF;
+  --ink-faint:#596076;
+  --border:#212B40;
+  --accent:#C77DFF;
+  --accent-ink:#1A0A2E;
+  --accent-soft:#2A1C40;
+
+  --negative:#3FD1FF;
+  --positive:#FF6B4A;
+  --negative-soft:#102733;
+  --positive-soft:#3A1D15;
+  --phosphor:#6BFFA3;
+
+  --good:#3BC27B;
+  --good-soft:#123323;
+  --warn:#E2A33D;
+  --warn-soft:#352711;
+  --critical:#E2605A;
+  --critical-soft:#3A1A18;
+
+  --font-display:"Michroma", "Arial Narrow", sans-serif;
+  --font-body:"Work Sans", system-ui, sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+:root[data-theme="light"]{
+  --bg:#F3F4FA;
+  --surface:#FFFFFF;
+  --surface-sunken:#E9EBF3;
+  --ink:#171C2B;
+  --ink-muted:#525A72;
+  --ink-faint:#8A91A8;
+  --border:#D8DCE8;
+  --accent:#8324CC;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#EDE0FA;
+
+  --negative:#0E79A8;
+  --positive:#C2481F;
+  --negative-soft:#DDEFF7;
+  --positive-soft:#FBE5DC;
+  --phosphor:#1E9E5C;
+
+  --good:#1E8E5A;
+  --good-soft:#E1F3EA;
+  --warn:#AD6A00;
+  --warn-soft:#FCF0D8;
+  --critical:#C23B3B;
+  --critical-soft:#FBE6E6;
+  color-scheme: light;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.6; }
+h1,h2,h3{ font-family:var(--font-display); text-wrap:balance; margin:0 0 .5em; letter-spacing:.01em; }
+h1{ font-size:1.35rem; } h2{ font-size:1.3rem; } h3{ font-size:.86rem; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-muted); }
+p{ margin:0 0 .8em; }
+.mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+a{ color:var(--accent); }
+button, input, select, textarea{ font-family:inherit; font-size:inherit; color:inherit; }
+:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; border-radius:4px; }
+
+.app-header{ background:var(--surface); border-bottom:1px solid var(--border); padding:18px 20px; }
+.app-header .inner{ max-width:1100px; margin:0 auto; }
+.app-header .eyebrow{ font-family:var(--font-mono); font-size:.72rem; color:var(--accent); letter-spacing:.08em; text-transform:uppercase; margin-bottom:6px; }
+.app-header .essential-q{ color:var(--ink-muted); font-size:.95rem; }
+.header-controls{ display:flex; gap:8px; margin-top:10px; }
+.icon-btn{ border:1px solid var(--border); background:var(--surface-sunken); color:var(--ink); border-radius:8px; padding:6px 10px; cursor:pointer; font-size:.76rem; font-weight:600; }
+.icon-btn:hover{ filter:brightness(1.2); }
+
+main{ max-width:1100px; margin:0 auto; padding:24px 20px 60px; }
+section{ margin-bottom:34px; }
+.panel{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; }
+.panel + .panel{ margin-top:14px; }
+.section-kicker{ display:inline-block; font-family:var(--font-mono); font-size:.68rem; font-weight:600; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:3px 10px; margin-bottom:8px; }
+
+.targets-list{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.targets-list li{ list-style:none; background:var(--surface-sunken); border:1px solid var(--border); border-radius:999px; padding:5px 12px; font-size:.78rem; color:var(--ink-muted); }
+
+.cer-field textarea{ width:100%; min-height:70px; border:1px solid var(--border); border-radius:8px; padding:9px; background:var(--surface-sunken); color:var(--ink); resize:vertical; }
+.cer-field label{ font-weight:600; font-size:.88rem; display:block; margin-bottom:6px; }
+
+.btn{ border:1px solid var(--border); background:var(--surface-sunken); color:var(--ink); border-radius:9px; padding:9px 14px; font-weight:700; font-size:.8rem; cursor:pointer; }
+.btn:hover{ filter:brightness(1.25); }
+.btn.primary{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+.btn.primary:hover{ filter:brightness(1.1); }
+.btn[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+.btn:disabled{ opacity:.4; cursor:not-allowed; }
+.btn-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; }
+
+.callout{ border-radius:10px; padding:10px 12px; font-size:.86rem; border:1px solid var(--border); }
+.callout.good{ background:var(--good-soft); color:var(--good); border-color:transparent; }
+.callout.critical{ background:var(--critical-soft); color:var(--critical); border-color:transparent; }
+.callout.info{ background:var(--accent-soft); color:var(--accent); border-color:transparent; }
+.callout.warn{ background:var(--warn-soft); color:var(--warn); border-color:transparent; }
+
+/* ===================== Experiment layout ===================== */
+.experiment-grid{ display:grid; grid-template-columns: minmax(0,1.3fr) minmax(0,.9fr); gap:16px; align-items:start; }
+@media (max-width:900px){ .experiment-grid{ grid-template-columns:1fr; } }
+.tube-stage canvas{ width:100%; display:block; background:var(--surface-sunken); border:1px solid var(--border); border-radius:10px; }
+.legend-row{ display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:.78rem; color:var(--ink-muted); }
+.legend-chip{ display:flex; align-items:center; gap:6px; }
+.legend-dot{ width:11px; height:11px; border-radius:50%; display:inline-block; }
+
+.control-row{ margin-bottom:14px; }
+.control-row:last-child{ margin-bottom:0; }
+.control-row .row-label{ font-weight:700; font-size:.82rem; margin-bottom:6px; display:block; }
+input[type="range"]{ width:100%; accent-color:var(--accent); }
+
+.discovery-panel{ opacity:.45; transition:opacity .6s ease, transform .6s ease; transform:translateY(4px); }
+.discovery-panel.revealed{ opacity:1; transform:none; }
+
+/* ===================== Plum pudding model ===================== */
+.model-stage canvas{ width:100%; display:block; background:var(--surface-sunken); border:1px solid var(--border); border-radius:10px; cursor: grab; touch-action:none; }
+.model-stage canvas:active{ cursor:grabbing; }
+
+/* ===================== Quiz ===================== */
+.quiz-question{ margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+.quiz-question:last-child{ border-bottom:none; }
+.quiz-question label{ display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; cursor:pointer; font-size:.9rem; }
+.quiz-score{ font-size:1.2rem; font-weight:700; font-family:var(--font-display); }
+
+footer.app-footer{ text-align:center; padding:28px 16px 40px; color:var(--ink-faint); font-size:.76rem; }
+
+@media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; } }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="inner">
+    <div class="eyebrow">NYS Regents Chemistry &middot; Grade 10</div>
+    <h1>J. J. Thomson's Cathode Ray Tube Experiment: Discovering the Electron</h1>
+    <p class="essential-q"><strong>Essential question:</strong> How did Thomson's cathode ray tube experiment provide evidence for the existence of electrons?</p>
+    <ul class="targets-list">
+      <li>Identify the main components of a cathode ray tube</li>
+      <li>Predict how an electric field affects cathode rays</li>
+      <li>Explain why cathode rays are negatively charged</li>
+      <li>Describe how Thomson's discovery changed the atomic model</li>
+    </ul>
+    <div class="header-controls no-print">
+      <button class="icon-btn" id="themeToggleBtn" type="button">☀ Light mode</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section id="predict">
+    <span class="section-kicker">Before you run it</span>
+    <h2>Predict</h2>
+    <div class="panel">
+      <p>What do you think will happen when cathode rays travel between a positively charged plate and a negatively charged plate?</p>
+      <div class="cer-field"><textarea id="predict-input" placeholder="Write your prediction here before running the experiment..."></textarea></div>
+    </div>
+  </section>
+
+  <section id="experiment">
+    <span class="section-kicker">The experiment</span>
+    <h2>Run the Cathode Ray Tube</h2>
+    <div class="experiment-grid">
+      <div class="panel tube-stage" id="tube-panel">
+        <canvas id="tube-canvas" width="720" height="360" role="img" aria-label="Cathode ray tube animation"></canvas>
+        <div class="legend-row">
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--negative);"></span>Electron (cathode ray)</span>
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--positive);"></span>Positive plate</span>
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--negative);"></span>Negative plate</span>
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--phosphor);"></span>Fluorescent screen glow</span>
+        </div>
+      </div>
+      <div class="panel" id="controls-panel">
+        <h3>Controls</h3>
+        <div class="control-row">
+          <div class="btn-row">
+            <button class="btn primary" id="btn-start-pause" type="button">⏸ Pause</button>
+            <button class="btn" id="btn-reset" type="button">↺ Reset</button>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="row-label">Electric field</span>
+          <div class="btn-row">
+            <button class="btn" id="btn-field-toggle" type="button" aria-pressed="false">Field: OFF</button>
+            <button class="btn" id="btn-reverse" type="button">⇅ Reverse charges</button>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="row-label">Field strength</span>
+          <input type="range" id="slider-strength" min="0" max="100" value="55">
+        </div>
+        <div class="control-row">
+          <div class="btn-row">
+            <button class="btn" id="btn-show-electrons" type="button" aria-pressed="true">Show individual electrons</button>
+            <button class="btn" id="btn-slow-motion" type="button" aria-pressed="false">Slow motion</button>
+          </div>
+        </div>
+        <div class="control-row mono" id="status-readout" style="font-size:.8rem; color:var(--ink-muted);"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="investigate">
+    <span class="section-kicker">After you run it</span>
+    <h2>Investigate</h2>
+    <div class="panel" id="investigate-questions"></div>
+  </section>
+
+  <section id="discovery">
+    <span class="section-kicker">The discovery</span>
+    <h2>What Thomson Found</h2>
+    <div class="panel discovery-panel" id="discovery-panel">
+      <p style="font-size:1.05rem;">"J. J. Thomson demonstrated that cathode rays consist of negatively charged particles called electrons. This provided evidence that atoms contain smaller particles and are not indivisible solid spheres."</p>
+      <p style="color:var(--ink-muted); font-size:.88rem;">Thomson went on to measure the electron's <strong>charge-to-mass ratio (e/m)</strong> — by measuring exactly how much a known electric field bent the beam, he could calculate this ratio without ever directly weighing a single electron. It was the first quantitative evidence that atoms are built from smaller, charged parts.</p>
+    </div>
+  </section>
+
+  <section id="model">
+    <span class="section-kicker">Updating the atomic model</span>
+    <h2>Thomson's "Plum Pudding" Model</h2>
+    <div class="experiment-grid">
+      <div class="panel model-stage">
+        <canvas id="model-canvas" width="500" height="340" role="img" aria-label="Atomic model — drag to rotate"></canvas>
+        <p class="mono" style="font-size:.74rem; color:var(--ink-faint); margin-top:8px;">Drag left/right to rotate the model.</p>
+      </div>
+      <div class="panel">
+        <h3>Compare the Models</h3>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-model-thomson" type="button" aria-pressed="true">Thomson's model</button>
+          <button class="btn" id="btn-model-dalton" type="button" aria-pressed="false">Dalton's model</button>
+        </div>
+        <p id="model-description" style="margin-top:12px; font-size:.88rem; color:var(--ink-muted);"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <span class="section-kicker">Knowledge check</span>
+    <h2>5-Question Quiz</h2>
+    <div class="panel" id="quiz-panel"></div>
+  </section>
+
+</main>
+
+<footer class="app-footer">Cathode Ray Tube Experiment &middot; NYS Regents Chemistry &middot; Runs entirely in your browser, no account required.</footer>
+
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
